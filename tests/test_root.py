@@ -31,4 +31,4 @@ async def test_openapi_schema_is_served(anon_client: AsyncClient) -> None:
     schema = response.json()
     assert schema["info"]["title"] == "movie-booking-api"
     # The example slice is mounted under the versioned prefix.
-    assert "/api/v1/items" in schema["paths"]
+    assert "/api/v1/movies" in schema["paths"]

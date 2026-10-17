@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for the ``Item`` slice.
+"""Pydantic v2 schemas for the ``Movie`` slice.
 
 These are the API's contract. Keeping them separate from the ORM model means
 the wire format can change without touching the database, and vice versa.
@@ -12,17 +12,17 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ItemCreate(BaseModel):
+class MovieCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     description: str | None = Field(default=None, max_length=2000)
 
 
-class ItemUpdate(BaseModel):
+class MovieUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
     description: str | None = Field(default=None, max_length=2000)
 
 
-class ItemRead(BaseModel):
+class MovieRead(BaseModel):
     # from_attributes lets FastAPI serialize the ORM object directly.
     model_config = ConfigDict(from_attributes=True)
 

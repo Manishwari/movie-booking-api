@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     environment: Literal["local", "test", "staging", "prod"] = "local"
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
+    secret_key: SecretStr = SecretStr("change-this-in-production")
 
     postgres_host: str = "localhost"
     postgres_port: int = 5433

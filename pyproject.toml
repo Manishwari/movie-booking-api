@@ -14,11 +14,13 @@ dependencies = [
     # The [asyncio] extra pulls in greenlet, which SQLAlchemy's async layer requires.
     "sqlalchemy[asyncio]>=2.0.52",
     "alembic>=1.19",
-    "pydantic>=2.13",
+    "pydantic[email]>=2.13",
     "pydantic-settings>=2.15",
     # >=0.31 is a hard floor: it is the first release with cp314 wheels. On 0.30
     # and earlier, Python 3.14 falls back to a source build and needs a C compiler.
     "asyncpg>=0.31",
+    "pwdlib[argon2]>=0.3.1",
+    "pyjwt>=2.13.0",
 ]
 
 [dependency-groups]

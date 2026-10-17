@@ -10,26 +10,31 @@ from fastapi.responses import JSONResponse
 
 from movie_booking_api.api.health import router as health_router
 from movie_booking_api.api.router import api_router
+from movie_booking_api.bookings.exceptions import (
+    BookingNotFoundError,
+    BookingPermissionError,
+    InvalidSeatSelectionError,
+    SeatNotFoundError,
+    SeatUnavailableError,
+    ShowNotFoundError,
+)
 from movie_booking_api.core.config import get_settings
 from movie_booking_api.core.logging import configure_logging
 from movie_booking_api.db.session import engine
-from movie_booking_api.items.exceptions import ItemNotFoundError
+from movie_booking_api.movies.exceptions import MovieNotFoundError
+from movie_booking_api.screens.exceptions import ScreenNotFoundError
+from movie_booking_api.users.exceptions import (
+    InvalidCredentialsError,
+    UserAlreadyExistsError,
+)
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Startup and shutdown.
+    """Configure application startup and shutdown."""
 
-    The engine is created at import time in ``db.session`` (httpx's
-    ASGITransport does not run lifespan events, so tests would otherwise get a
-    None engine). All this needs to do is dispose it.
-
-    Disposing explicitly matters on Windows: without it, Proactor event-loop
-    transports emit spurious ConnectionResetError from ``__del__`` at
-    interpreter shutdown.
-    """
     configure_logging(debug=settings.debug)
     yield
     await engine.dispose()
@@ -45,18 +50,141 @@ app = FastAPI(
 )
 
 
-@app.exception_handler(ItemNotFoundError)
-async def item_not_found_handler(request: Request, exc: ItemNotFoundError) -> JSONResponse:
-    """Map a domain error to HTTP, so the service layer never imports FastAPI."""
+@app.exception_handler(MovieNotFoundError)
+async def movie_not_found_handler(
+    request: Request,
+    exc: MovieNotFoundError,
+) -> JSONResponse:
+    """Map a missing movie to HTTP 404."""
+
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
         content={"detail": str(exc)},
     )
 
 
+@app.exception_handler(ScreenNotFoundError)
+async def screen_not_found_handler(
+    request: Request,
+    exc: ScreenNotFoundError,
+) -> JSONResponse:
+    """Map a missing screen to HTTP 404."""
+
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(UserAlreadyExistsError)
+async def user_already_exists_handler(
+    request: Request,
+    exc: UserAlreadyExistsError,
+) -> JSONResponse:
+    """Map a duplicate user to HTTP 409."""
+
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(InvalidCredentialsError)
+async def invalid_credentials_handler(
+    request: Request,
+    exc: InvalidCredentialsError,
+) -> JSONResponse:
+    """Map invalid credentials to HTTP 401."""
+
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={"detail": str(exc)},
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+@app.exception_handler(ShowNotFoundError)
+async def show_not_found_handler(
+    request: Request,
+    exc: ShowNotFoundError,
+) -> JSONResponse:
+    """Map a missing show to HTTP 404."""
+
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(SeatNotFoundError)
+async def seat_not_found_handler(
+    request: Request,
+    exc: SeatNotFoundError,
+) -> JSONResponse:
+    """Map a missing seat to HTTP 404."""
+
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(BookingNotFoundError)
+async def booking_not_found_handler(
+    request: Request,
+    exc: BookingNotFoundError,
+) -> JSONResponse:
+    """Map a missing booking to HTTP 404."""
+
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(BookingPermissionError)
+async def booking_permission_handler(
+    request: Request,
+    exc: BookingPermissionError,
+) -> JSONResponse:
+    """Map booking permission errors to HTTP 403."""
+
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(SeatUnavailableError)
+async def seat_unavailable_handler(
+    request: Request,
+    exc: SeatUnavailableError,
+) -> JSONResponse:
+    """Map unavailable seats to HTTP 409."""
+
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(InvalidSeatSelectionError)
+async def invalid_seat_selection_handler(
+    request: Request,
+    exc: InvalidSeatSelectionError,
+) -> JSONResponse:
+    """Map an invalid seat selection to HTTP 422."""
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": str(exc)},
+    )
+
+
 @app.get("/", tags=["root"])
 async def root() -> dict[str, str]:
-    """The one endpoint that proves the scaffold is alive."""
+    """Return basic application information."""
+
     return {
         "name": settings.app_name,
         "environment": settings.environment,

@@ -1,4 +1,4 @@
-"""ORM model for the example ``Item`` slice.
+"""ORM model for the Movie slice.
 
 Models hold shape only -- columns, relationships, table args. Business logic
 lives in ``service.py``.
@@ -15,15 +15,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 from movie_booking_api.db.base_class import Base
 
 
-class Item(Base):
-    __tablename__ = "items"
+class Movie(Base):
+    __tablename__ = "movies"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        # sa.Uuid is backend-agnostic in SQLAlchemy 2.0: native uuid on
-        # PostgreSQL, CHAR(32) elsewhere.
         Uuid,
         primary_key=True,
-        # gen_random_uuid() is built into PostgreSQL 13+; no pgcrypto needed.
         server_default=text("gen_random_uuid()"),
     )
     name: Mapped[str] = mapped_column(String(200), index=True)
@@ -34,4 +31,4 @@ class Item(Base):
     )
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
-        return f"<Item id={self.id!r} name={self.name!r}>"
+        return f"<Movie id={self.id!r} name={self.name!r}>"
